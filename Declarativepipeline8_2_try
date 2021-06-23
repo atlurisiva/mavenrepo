@@ -93,7 +93,7 @@ pipeline
                         catch(Exception a5)
                         {
                             mail bcc: '', body: 'Delivery failed', cc: '', from: '', replyTo: '', subject: 'Delivery failed', to: 'hostnotreachable@gmail.com'
-                            exit(1)
+                          
                         }
                     }
                  
