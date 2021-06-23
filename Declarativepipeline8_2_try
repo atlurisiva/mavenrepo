@@ -1,0 +1,106 @@
+pipeline
+    {
+        agent any 
+        stages 
+        {
+            stage("continous download")
+            {
+                steps
+                {
+                    script
+                    {
+                        try
+                        {
+                             git 'https://github.com/atlurisiva/mavenrepo.git'
+                        }
+                        catch(Exception a1)
+                        {
+                            mail bcc: '', body: 'Continuous download failed', cc: '', from: '', replyTo: '', subject: 'Download failed', to: 'hostnotreachable@gmail.com'
+                            exit(1)
+                        }
+                    }
+                   
+                }
+            }
+            stage("continous build")
+            {
+                steps
+                {
+                    script
+                    {
+                        try 
+                        {
+                            sh 'mvn package'
+                        }
+                        catch(Exception a2) 
+                        {
+                            mail bcc: '', body: 'Continuous Build failed', cc: '', from: '', replyTo: '', subject: 'Build failed', to: 'hostnotreachable@gmail.com'
+                            exit(1)
+                        }
+                    }
+                        
+                }
+            }
+            stage("continous Deployment")
+            {
+                steps
+                {   
+                    script
+                    {
+                        try
+                        {
+                            deploy adapters: [tomcat9(credentialsId: '59aef3d0-0f60-4c8e-a692-d7b87dd150b7', path: '', url: 'http://172.31.86.164:8080/')], contextPath: 'testapp1', war: '**/*.war'   
+                        }
+                        catch(Exception a3)
+                        {
+                        mail bcc: '', body: 'Deployment Build failed', cc: '', from: '', replyTo: '', subject: 'Deployment failed', to: 'hostnotreachable@gmail.com'
+                        exit(1)
+                        }
+                    }
+                    
+                }
+            }
+            stage("continous Testing")
+                {
+                    steps
+                    {
+                        script 
+                        {
+                            try 
+                            {
+                                git 'https://github.com/intelliqittrainings/FunctionalTesting.git'
+                                sh 'java -jar /home/ubuntu/.jenkins/workspace/Declartivepipeline2/testing.jar'
+                            }
+                            catch(Exception a4)
+                            {
+                                mail bcc: '', body: 'Testing failed', cc: '', from: '', replyTo: '', subject: 'Testing failed', to: 'hostnotreachable@gmail.com'
+                                exit(1)
+                            }
+                        }
+                        
+                    }
+                }
+            stage("Continous Delivery")
+            { 
+                steps
+                {
+                    script 
+                    {
+                        try 
+                        {
+                            deploy adapters: [tomcat9(credentialsId: '59aef3d0-0f60-4c8e-a692-d7b87dd150b7', path: '', url: 'http://172.31.93.126:8080/')], contextPath: 'prodapp1', war: '**/*.war'
+                        }
+                        catch(Exception a5)
+                        {
+                            mail bcc: '', body: 'Delivery failed', cc: '', from: '', replyTo: '', subject: 'Delivery failed', to: 'hostnotreachable@gmail.com'
+                            exit(1)
+                        }
+                    }
+                 
+                }
+
+                
+                
+            }
+        }
+    }
