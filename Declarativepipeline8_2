@@ -1,0 +1,47 @@
+pipeline
+    {
+        agent any 
+        stages 
+        {
+            stage("continous download")
+            {
+                steps
+                {
+                    git 'https://github.com/atlurisiva/mavenrepo.git'
+                }
+            }
+            stage("continous build")
+            {
+                steps
+                {
+                    sh 'mvn package'
+                }
+            }
+            stage("continous Deployment")
+            {
+                steps
+                {
+                    deploy adapters: [tomcat9(credentialsId: '59aef3d0-0f60-4c8e-a692-d7b87dd150b7', path: '', url: 'http://172.31.86.164:8080/')], contextPath: 'testapp1', war: '**/*.war'
+                }
+            }
+            stage("continous Release")
+                {
+                    steps
+                    {
+                        git 'https://github.com/intelliqittrainings/FunctionalTesting.git'
+                        sh 'java -jar /home/ubuntu/.jenkins/workspace/Declartivepipeline/testing.jar'
+                    }
+                }
+        }
+        post 
+            {
+                success
+                {
+                    deploy adapters: [tomcat9(credentialsId: '59aef3d0-0f60-4c8e-a692-d7b87dd150b7', path: '', url: 'http://172.31.93.126:8080/')], contextPath: 'prodapp1', war: '**/*.war'
+                }
+                failure
+                {
+                    mail bcc: '', body: 'Jenkins failed', cc: '', from: '', replyTo: '', subject: 'Jenkins failure ', to: 'hostnotreachable@gmail.com'
+                }
+            }
+    }
